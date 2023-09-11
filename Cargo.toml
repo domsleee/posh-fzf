@@ -1,0 +1,16 @@
+[package]
+name = "posh-fzf"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.4.2", features = ["derive"] }
+indexmap = "2.0.0"
+
+[profile.release]
+lto = true
+strip = true
+opt-level = "s"
+codegen-units = 1

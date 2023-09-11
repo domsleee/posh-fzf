@@ -1,0 +1,1 @@
+cargo watch -x 'install --path . --debug'
