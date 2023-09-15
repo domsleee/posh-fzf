@@ -44,7 +44,7 @@ function ContinuationPrompt {
 	
 	try {
 		# $data = ((global:prompt) -split "`n")[-1]
-		# Write-Host -NoNewline (&starship module character)
+		Write-Host -NoNewline (&starship module character)
 		[Microsoft.PowerShell.PSConsoleReadLine]::Insert(" ")
 		[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
 	} finally {

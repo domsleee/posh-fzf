@@ -76,6 +76,7 @@ fn write_to_fzf_stdin(fzf_stdin: &mut ChildStdin, history_path: &PathBuf) -> io:
     let reader = BufReader::new(file);
     let mut set = indexmap::IndexSet::new();
 
+    let mut all_lines = vec![];
     let mut val: String = String::from("");
     for line in reader.lines() {
         let mut data = line?;
@@ -83,12 +84,16 @@ fn write_to_fzf_stdin(fzf_stdin: &mut ChildStdin, history_path: &PathBuf) -> io:
             data.pop();
             val = val + &data;
         } else {
-            set.insert(val + &data);
+            all_lines.push(val + &data);
             val = String::from("");
         }
     }
 
-    for el in set.iter().rev() {
+    for line in all_lines.iter().rev() {
+        set.insert(line);
+    }
+
+    for el in set {
         writeln!(writer, "{}", el)?;
     }
     writer.flush()?; // Flush the buffer to make sure everything gets written
