@@ -1,1 +1,1 @@
-cargo watch -x 'install --path . --debug'
+cargo watch -x 'install --path . --debug --offline'

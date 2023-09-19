@@ -1,61 +1,154 @@
-
-Set-PSReadLineKeyHandler -Key 'Ctrl+t' -ScriptBlock {
-	$fzfSelection = Invoke-Fzf @("select-multiple")
-	if ($fzfSelection) {
-		InsertUtf8 $fzfSelection
+$null = New-Module posh-fzf {
+	$defaultHeight = "45%"
+	function Invoke-PoshFzfSelectItems {
+		Invoke-PoshFzfTempEnv @{FZF_DEFAULT_COMMAND = 'fd --hidden --exclude ".git"'} -ScriptBlock {
+			$fzfSelection = Invoke-PoshFzf -poshFzfArgs @("fzf", "--", "-m")
+			if ($fzfSelection) {
+				Invoke-PoshFzfInsertUtf8 $fzfSelection
+			}
+		}
 	}
-}
-
-Set-PSReadLineKeyHandler -Key 'Alt+c' -ScriptBlock {
-	$fzfSelection = Invoke-Fzf @("change-directory")
-	if ($fzfSelection) {
-		[Microsoft.PowerShell.PSConsoleReadLine]::DeleteLine()
-		InsertUtf8 $fzfSelection
-		[Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-	}
-}
-
-Set-PSReadLineKeyHandler -Key 'Ctrl+r' -ScriptBlock {
-	$historyPath = (Get-PSReadLineOption).HistorySavePath
-	$fzfSelection = Invoke-Fzf @("history", $historyPath)
-	if ($fzfSelection) {
-		[Microsoft.PowerShell.PSConsoleReadLine]::DeleteLine()
-		InsertUtf8 $fzfSelection
-	}
-}
-
-# // https://github.com/kelleyma49/PSFzf/blob/051a0da959321253fd11bf9bb14e270b2902eb5c/PSFzf.Base.ps1#L258-L560
-function Invoke-Fzf([array]$poshFzfArgs) {
-	$numRows = if ($env:POSH_FZF_NUM_ROWS) { $env:POSH_FZF_NUM_ROWS } else { 11 }
-	[Microsoft.PowerShell.PSConsoleReadLine]::Insert("`n" * ($numRows))
-	[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
-	$tempFileName = [System.IO.Path]::GetTempFileName()
-	$argumentList = @("--temp-file-name", $tempFileName) + $poshFzfArgs
-	$process = Start-Process -FilePath "posh-fzf" -ArgumentList $argumentList -PassThru -NoNewWindow
-	$process.WaitForExit()
-	ContinuationPrompt
-	$content = Get-Content -Path $tempFileName
-	return $content
-}
-
-function ContinuationPrompt {
-	$previousOutputEncoding = [Console]::OutputEncoding
-	[Console]::OutputEncoding = [Text.Encoding]::UTF8
 	
-	try {
-		# $data = ((global:prompt) -split "`n")[-1]
-		Write-Host -NoNewline (&starship module character)
-		[Microsoft.PowerShell.PSConsoleReadLine]::Insert(" ")
-		[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
-	} finally {
+	function Invoke-PoshFzfChangeDirectory {
+		Invoke-PoshFzfTempEnv @{FZF_DEFAULT_COMMAND = 'fd --type d --hidden --exclude ".git"'} -ScriptBlock {
+			$directory = Invoke-PoshFzf -poshFzfArgs @("fzf", "--", "--preview", "fd . {} --maxdepth 1")
+			if ($directory) {
+				[Microsoft.PowerShell.PSConsoleReadLine]::DeleteLine()
+				Invoke-PoshFzfInsertUtf8 "cd $directory"
+				[Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+			}
+		}
+	}
+	
+	function Invoke-PoshFzfSelectHistory {
+		$historyPath = (Get-PSReadLineOption).HistorySavePath
+		$historyCommand = Invoke-PoshFzf -poshFzfArgs @("history", $historyPath)
+		if ($historyCommand) {
+			[Microsoft.PowerShell.PSConsoleReadLine]::DeleteLine()
+			Invoke-PoshFzfInsertUtf8 $historyCommand
+		}
+	}
+	
+	# // https://github.com/kelleyma49/PSFzf/blob/051a0da959321253fd11bf9bb14e270b2902eb5c/PSFzf.Base.ps1#L258-L560
+	function Invoke-PoshFzf {
+		[CmdletBinding()]
+		param (
+			[Parameter(ValueFromPipeline=$true)]
+			[string]$inputString,
+			[array]$poshFzfArgs,
+			[string]$heightRowsOrPercent = $defaultHeight
+		)
+		begin {
+			$numRows = CalculateHeight($heightRowsOrPercent)
+			[Microsoft.PowerShell.PSConsoleReadLine]::Insert("`n" * ($numRows))
+			[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
+			$tempFileName = [System.IO.Path]::GetTempFileName()
+			$argumentList = @("--temp-file-name", $tempFileName, "--height", $numRows) + $poshFzfArgs
+
+			$startInfo = New-Object System.Diagnostics.ProcessStartInfo
+			$startInfo.FileName = "posh-fzf"
+			Set-ArgumentList $startInfo $argumentList
+			$startInfo.RedirectStandardInput = $MyInvocation.ExpectingInput
+			$startInfo.UseShellExecute = $false
+			$startInfo.WorkingDirectory = (Get-Location).Path
+
+			$process = New-Object System.Diagnostics.Process
+			$process.StartInfo = $startInfo
+			$process.Start() | Out-Null
+		}
+		process {		
+			if ($inputString) {
+				$process.StandardInput.WriteLine($inputString)
+			}
+		}
+		end {
+			$process.WaitForExit()
+			RedrawLastLineOfPrompt
+			$content = Get-Content -Path $tempFileName
+			$content = $content -join "`n"
+			return $content
+		}
+	}
+
+	function Set-ArgumentList($startInfo, $argumentList) {
+		# Taken from https://github.com/starship/starship/blob/43b2d42cd526e34c5f0290e7409fbd6d3a54e908/src/init/starship.ps1#L35-L53
+		if ($startInfo.ArgumentList.Add) {
+			# PowerShell 6+ supports ArgumentList property
+			foreach ($arg in $argumentList) { $startInfo.ArgumentList.Add($arg) }
+		}
+		else {
+			# Build an arguments string which follows the C++ command-line argument quoting rules
+			# See: https://docs.microsoft.com/en-us/previous-versions//17w5ykft(v=vs.85)?redirectedfrom=MSDN
+			$escaped = $argumentList | ForEach-Object {
+				$s = $_ -Replace '(\\+)"','$1$1"'; # Escape backslash chains immediately preceding quote marks.
+				$s = $s -Replace '(\\+)$','$1$1';  # Escape backslash chains immediately preceding the end of the string.
+				$s = $s -Replace '"','\"';         # Escape quote marks.
+				"`"$s`""                           # Quote the argument.
+			}
+			$startInfo.Arguments = $escaped -Join ' ';
+		}
+	}
+
+	function Invoke-PoshFzfTempEnv([hashtable]$envObj, [scriptblock]$ScriptBlock) {
+		$originals = @{}
+		foreach ($key in $envObj.keys) {
+			$originals[$key] = (Get-Item "env:$key" -ErrorAction SilentlyContinue).Value
+			Set-Item "env:$key" $envObj[$key]
+
+		}
+		try {
+			Invoke-Command -ScriptBlock $ScriptBlock
+		} finally {
+			foreach ($key in $originals.keys) {
+				Set-Item "env:$key" $originals[$key]
+			}
+		}
+	}
+	
+	function RedrawLastLineOfPrompt {
+		$previousOutputEncoding = [Console]::OutputEncoding
+		[Console]::OutputEncoding = [Text.Encoding]::UTF8
+		
+		try {
+			$prompt = ""
+			if (Get-Command "Invoke-PoshFzfRedrawLastLineOfPrompt" -ErrorAction SilentlyContinue) {
+				$prompt = Invoke-PoshFzfRedrawLastLineOfPrompt
+			} else {
+				$prompt = prompt 6>$null
+			}
+			$lastLine = ($prompt -split "`n")[-1]
+			Write-Host -NoNewline $lastLine
+			[Microsoft.PowerShell.PSConsoleReadLine]::Insert(" ")
+			[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
+		} finally {
+			[Console]::OutputEncoding = $previousOutputEncoding
+		}
+	}
+	
+	function Invoke-PoshFzfInsertUtf8($data) {
+		$previousOutputEncoding = [Console]::OutputEncoding
+		[Console]::OutputEncoding = [Text.Encoding]::UTF8
+		[Microsoft.PowerShell.PSConsoleReadLine]::Insert($data)
 		[Console]::OutputEncoding = $previousOutputEncoding
 	}
-}
-
-function InsertUtf8($data) {
-	$previousOutputEncoding = [Console]::OutputEncoding
-	[Console]::OutputEncoding = [Text.Encoding]::UTF8
-	[Microsoft.PowerShell.PSConsoleReadLine]::Insert($data)
-	[Console]::OutputEncoding = $previousOutputEncoding
-
+	
+	function CalculateHeight($heightRowsOrPercent) {
+		if ($heightRowsOrPercent -is [int]) {
+			return $heightRowsOrPercent
+		}
+		# https://github.com/junegunn/fzf/blob/d2b852f7cbd2da53804de00cf22ca0b7e6c9f472/src/terminal.go#L547-L552
+		$heightPercent = [int]$heightRowsOrPercent.TrimEnd('%')
+		$termHeight = $host.UI.RawUI.WindowSize.Height
+		$minHeight = 10 # 10 is the default
+		return [Math]::Max([int]($heightPercent * [double]$termHeight / 100.0), $minHeight)
+	}
+	
+	Export-ModuleMember -Function @(
+		"Invoke-PoshFzfSelectItems",
+		"Invoke-PoshFzfChangeDirectory",
+		"Invoke-PoshFzfSelectHistory",
+		"Invoke-PoshFzf",
+		"Invoke-PoshFzfInsertUtf8",
+		"Invoke-PoshFzfTempEnv"
+	)
 }
