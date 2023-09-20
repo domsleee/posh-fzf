@@ -16,13 +16,13 @@ fn main() -> io::Result<()> {
     match args.command {
         Commands::Init => init(),
         Commands::History { ref history_path } => history::history(&args, history_path)?,
-        Commands::Custom { ref trail_args } => custom(&args, &trail_args)?,
-        Commands::Fzf { ref trail_args } => fzf(&args, &trail_args)?,
+        Commands::Custom { ref trail_args } => custom(&args, trail_args)?,
+        Commands::Fzf { ref trail_args } => fzf(&args, trail_args)?,
     };
     Ok(())
 }
 
-static INIT_DATA: &[u8] = include_bytes!("../resource/init.ps1");
+static INIT_DATA: &[u8] = include_bytes!("../resource/posh-fzf.ps1");
 fn init() {
     println!(
         "{}",
@@ -30,22 +30,22 @@ fn init() {
     );
 }
 
-fn fzf(args: &RootArgs, trail_args: &Vec<String>) -> io::Result<()> {
+fn fzf(args: &RootArgs, trail_args: &[String]) -> io::Result<()> {
     let mut new_trail_args = vec!["fzf".to_string(), "--height".to_string(), get_height(args)];
-    new_trail_args.extend(trail_args.clone());
+    new_trail_args.extend(trail_args.to_owned());
     custom(args, &new_trail_args)
 }
 
-fn custom(args: &RootArgs, trail_args: &Vec<String>) -> io::Result<()> {
+fn custom(args: &RootArgs, trail_args: &[String]) -> io::Result<()> {
     let mut child = Command::new(&trail_args[0])
         .args(trail_args.iter().skip(1))
         .stdin(Stdio::inherit())
-        .stdout(Stdio::piped())
+        .stdout(Stdio::inherit())
         .spawn()?;
-    wait_for_child(args, &mut child, |x| format!("{x}"))
+    wait_for_child(args, &mut child, |x| x.to_string())
 }
 
-pub fn wait_for_child<F>(args: &RootArgs, child: &mut Child, formatter: F) -> io::Result<()>
+pub fn wait_for_child<F>(_args: &RootArgs, child: &mut Child, formatter: F) -> io::Result<()>
 where
     F: Fn(&str) -> String,
 {
@@ -56,12 +56,7 @@ where
 
     if status.success() {
         let output = formatter(output.trim());
-        match &args.temp_file_name {
-            Some(temp_file) => {
-                std::fs::write(&temp_file, output).expect("can write");
-            }
-            _ => println!("{output}"),
-        }
+        print!("{output}");
     } else {
         std::process::exit(1);
     }
