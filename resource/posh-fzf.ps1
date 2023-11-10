@@ -106,12 +106,8 @@ $null = New-Module posh-fzf {
 	}
 
 	function ClearBufferAhead([int] $numRows) {
-		# FIXME: the bell still fires
-		$originalBellStyle = (Get-PSReadLineOption).BellStyle
-		Set-PSReadLineOption -BellStyle None
 		[Microsoft.PowerShell.PSConsoleReadLine]::Insert("`n" * ($numRows))
 		[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
-		Set-PSReadLineOption -BellStyle $originalBellStyle
 	}
 
 	function RedrawLastLineOfPrompt {
