@@ -1,0 +1,5 @@
+[target.arm-linux-androideabi]
+linker = "arm-linux-androideabi-gcc"
+
+[target.arm-unknown-linux-musleabihf]
+linker = "arm-linux-gnueabihf-gcc"
