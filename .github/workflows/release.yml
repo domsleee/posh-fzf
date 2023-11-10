@@ -54,6 +54,18 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
+      - name: Install AArch64 Toolchain
+        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-aarch64-linux-gnu
+
+      - name: Install ARM Toolchain
+        if: ${{ matrix.target == 'arm-unknown-linux-musleabihf' || matrix.target == 'armv7-unknown-linux-musleabihf' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-linux-gnueabihf
+
       - name: Build binary
         env:
           TARGET_RUSTFLAGS: ${{ matrix.target_rustflags }}
