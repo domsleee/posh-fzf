@@ -21,12 +21,9 @@ jobs:
           - os: ubuntu-latest
             target: arm-unknown-linux-musleabihf
             target_rustflags: '--codegen linker=arm-linux-gnueabihf-gcc'
-          - os: ubuntu-latest
-            target: armv7-unknown-linux-musleabihf
-            target_rustflags: '--codegen linker=arm-linux-gnueabihf-gcc'
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-musl
-            target_rustflags: '--codegen linker=aarch64-linux-gnu-gcc'
+          # - os: ubuntu-latest
+          #   target: aarch64-unknown-linux-musl
+          #   target_rustflags: '--codegen linker=aarch64-linux-gnu-gcc'
           - os: macos-latest
             target: x86_64-apple-darwin
           - os: macos-latest
