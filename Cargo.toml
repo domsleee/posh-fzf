@@ -1,7 +1,12 @@
 [package]
 name = "posh-fzf"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+authors = ["Dom Slee <domslee1@gmail.com>"]
+description = "Fzf keybinding integration for powershell"
+repository = "https://github.com/domsleee/posh-fzf"
+license = "MIT"
+keywords = ["powershell", "pwsh", "fzf", "fuzzy", "keybindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
