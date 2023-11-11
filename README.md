@@ -1,11 +1,16 @@
 # posh-fzf
+[![Crates.io](https://img.shields.io/crates/v/posh-fzf.svg)](https://crates.io/crates/posh-fzf)
+[![Build Status](https://github.com/domsleee/posh-fzf/actions/workflows/ci.yml/badge.svg)](https://github.com/domsleee/posh-fzf/actions/workflows/ci.yml)
 
 [Fzf](https://github.com/junegunn/fzf) keybinding integration with powershell 5.1 and pwsh >= 7.
+
+![demo](./media/posh-fzf-demo.gif)
 
 ## Installation
 
 1. Run `cargo install posh-fzf`, or download the latest release from [releases](https://github.com/domsleee/posh-fzf/releases).
-2. Install `fd` and `fzf`. I would suggest [scoop](https://scoop.sh/), you can run `scoop install fzf fd`.
+2. Install `fd` and `fzf`.
+   * For windows, I would recommend installing [scoop](https://scoop.sh/), and running `scoop install fzf fd`.
 3. Add this to `code $PROFILE`:
 ```powershell
 Invoke-Expression (&posh-fzf init | Out-String)
