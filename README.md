@@ -1,6 +1,10 @@
 # posh-fzf
+[![Crates.io](https://img.shields.io/crates/v/posh-fzf.svg)](https://crates.io/crates/posh-fzf)
+[![Build Status](https://github.com/domsleee/posh-fzf/actions/workflows/ci.yml/badge.svg)](https://github.com/domsleee/posh-fzf/actions/workflows/ci.yml)
 
 [Fzf](https://github.com/junegunn/fzf) keybinding integration with powershell 5.1 and pwsh >= 7.
+
+![demo](./media/posh-fzf-demo.gif)
 
 ## Installation
 
