@@ -5,7 +5,8 @@
 ## Installation
 
 1. Run `cargo install posh-fzf`, or download the latest release from [releases](https://github.com/domsleee/posh-fzf/releases).
-2. Install `fd` and `fzf`. I would suggest [scoop](https://scoop.sh/), you can run `scoop install fzf fd`.
+2. Install `fd` and `fzf`.
+   * For windows, I would recommend installing [scoop](https://scoop.sh/), and running `scoop install fzf fd`.
 3. Add this to `code $PROFILE`:
 ```powershell
 Invoke-Expression (&posh-fzf init | Out-String)
