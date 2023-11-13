@@ -50,7 +50,7 @@ fn write_history_to_fzf_stdin(
 
     let mut all_data = String::new();
     for el in set.iter().rev() {
-        all_data.push_str(&el);
+        all_data.push_str(el);
         all_data.push('\n');
     }
 
