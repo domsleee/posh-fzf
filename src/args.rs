@@ -19,6 +19,8 @@ pub enum Commands {
     Init,
     /// Reverse history search (ctrl+r)
     History { history_path: PathBuf },
+    /// Prints a history line, by replacing ↵ with newlines
+    PrintHistoryLine { history_line: String },
     /// Custom command
     Custom {
         #[clap(last = true)]

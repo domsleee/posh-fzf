@@ -13,6 +13,10 @@ pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
         .arg("--height")
         .arg(get_height(args))
         .arg("--scheme=history")
+        .arg("--preview")
+        .arg("posh-fzf print-history-line {}")
+        // .arg("--preview-window")
+        // .arg("down")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
@@ -45,8 +49,8 @@ fn write_history_to_fzf_stdin(
     }
 
     let mut all_data = String::new();
-    for el in set {
-        all_data.push_str(&el);
+    for el in set.iter().rev() {
+        all_data.push_str(el);
         all_data.push('\n');
     }
 
@@ -55,4 +59,8 @@ fn write_history_to_fzf_stdin(
     writer.flush()?;
 
     Ok(())
+}
+
+pub fn print_history_line(history_line: &str) {
+    println!("{}", history_line.replace(HISTORY_NEWLINE, "\n"))
 }

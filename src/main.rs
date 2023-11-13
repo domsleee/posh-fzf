@@ -16,6 +16,7 @@ fn main() -> io::Result<()> {
     match args.command {
         Commands::Init => init(),
         Commands::History { ref history_path } => history::history(&args, history_path)?,
+        Commands::PrintHistoryLine { history_line } => history::print_history_line(&history_line),
         Commands::Custom { ref trail_args } => custom(&args, trail_args)?,
         Commands::Fzf { ref trail_args } => fzf(&args, trail_args)?,
     };
