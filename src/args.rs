@@ -15,7 +15,7 @@ pub struct RootArgs {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Init powershell script
+    /// Print the powershell init script
     Init,
     /// Reverse history search (ctrl+r)
     History { history_path: PathBuf },

@@ -14,6 +14,9 @@ keywords = ["powershell", "pwsh", "fzf", "fuzzy", "keybindings"]
 clap = { version = "4.4.2", features = ["derive"] }
 indexmap = "2.0.0"
 
+[dev-dependencies]
+tempfile = "3.3"
+
 [profile.release]
 lto = true
 strip = true
