@@ -1,6 +1,7 @@
 $null = New-Module posh-fzf {
 	$defaultHeight = "45%"
 	$defaultHeightArg = "--height=$defaultHeight"
+	$historyPath = (Get-PSReadLineOption).HistorySavePath
 
 	function Invoke-PoshFzfSelectItems {
 		Invoke-PoshFzfTempEnv @{FZF_DEFAULT_COMMAND = 'fd --hidden --exclude ".git"'} -ScriptBlock {
@@ -23,7 +24,6 @@ $null = New-Module posh-fzf {
 	}
 	
 	function Invoke-PoshFzfSelectHistory {
-		$historyPath = (Get-PSReadLineOption).HistorySavePath
 		$historyCommand = Invoke-PoshFzfStartProcess -FileName "posh-fzf" -Arguments @("history", $historyPath)
 		if ($historyCommand) {
 			[Microsoft.PowerShell.PSConsoleReadLine]::DeleteLine()
