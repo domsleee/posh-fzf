@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/domsleee/posh-fzf/compare/v0.2.0...v0.2.2) (2023-12-10)
+
+
+### Bug Fixes
+
+* artifacts need to be uploaded after release-please ([#15](https://github.com/domsleee/posh-fzf/issues/15)) ([c4dec63](https://github.com/domsleee/posh-fzf/commit/c4dec63cbc9666c11a592bf1ac415f816c8083b5))
+* Don't use draft for release artifacts ([#18](https://github.com/domsleee/posh-fzf/issues/18)) ([26f1ca9](https://github.com/domsleee/posh-fzf/commit/26f1ca9b128aa2f6fc84a46d37735590aac3c58c))
+
 ## [0.2.1](https://github.com/domsleee/posh-fzf/compare/v0.2.0...v0.2.1) (2023-12-10)
 
 
