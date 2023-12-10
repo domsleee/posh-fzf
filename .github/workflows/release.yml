@@ -7,6 +7,19 @@ on:
 env:
   CARGO_INCREMENTAL: 0
 jobs:
+  release_please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    if: github.repository == 'domsleee/posh-fzf'
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: rust
   release:
     name: ${{ matrix.target }}
     permissions:
@@ -70,16 +83,11 @@ jobs:
 
       - name: Install cargo-deb
         if: ${{ contains(matrix.os, 'ubuntu') }}
-        uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-deb
+        run: cargo install cargo-deb
 
       - name: Build deb
         if: ${{ contains(matrix.os, 'ubuntu') }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: deb
-          args: --no-build --no-strip --output=. --target=${{ matrix.target }}
+        run: cargo deb --no-build --no-strip --output=. --target=${{ matrix.target }}
 
       - name: Package (*nix)
         if: runner.os != 'Windows'
@@ -97,7 +105,7 @@ jobs:
           ./target/${{ matrix.target }}/release/posh-fzf.exe
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
           path: |
