@@ -23,6 +23,7 @@ jobs:
           release-type: rust
   github_build:
     name: ${{ matrix.target }}
+    needs: [release_please]
     permissions:
       contents: write
     runs-on: ${{ matrix.os }}
@@ -114,29 +115,20 @@ jobs:
               *.tar.gz
               *.zip
 
-  upload_artifacts:
-    name: Add Build Artifacts to release
-    if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
-    needs: [release_please, github_build]
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Add Artifacts to Release
+      - name: Upload artifact to release release
+        if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
         uses: softprops/action-gh-release@v1
         with:
           files: |
-              posh-fzf-*/posh-fzf-*.deb
-              posh-fzf-*/posh-fzf-*.tar.gz
-              posh-fzf-*/posh-fzf-*.zip
-          name: ${{ needs.release_please.outputs.tag_name }}
-          tag_name: ${{ needs.release_please.outputs.tag_name }}
+            *.deb
+            *.tar.gz
+            *.zip
+          name: ${{ steps.get_version.outputs.value }}
+          tag_name: ${{ steps.get_version.outputs.value }}
 
   publish:
     runs-on: ubuntu-latest
-    needs: [release_please, github_build, upload_artifacts]
+    needs: [release_please, github_build]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
