@@ -11,7 +11,7 @@ jobs:
     name: Get version
     runs-on: ubuntu-latest
     outputs:
-      tag_name: v${{ steps.get_version.outputs.version }}
+      tag_name: v${{ steps.get_version.outputs.value }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
