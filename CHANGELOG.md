@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/domsleee/posh-fzf/compare/v0.2.3...v0.2.4) (2023-12-10)
+
+
+### Bug Fixes
+
+* Artifacts not uploading correctly ([#21](https://github.com/domsleee/posh-fzf/issues/21)) ([8dae900](https://github.com/domsleee/posh-fzf/commit/8dae9001543bb50e2d28e7e47f6a59f24e8f3ea7))
+
 ## [0.2.3](https://github.com/domsleee/posh-fzf/compare/v0.2.2...v0.2.3) (2023-12-10)
 
 
