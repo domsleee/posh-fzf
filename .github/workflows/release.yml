@@ -110,13 +110,16 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            *.{deb,tar.gz,zip}
+              *.deb
+              *.tar.gz
+              *.zip
 
   upload_artifacts:
     name: Add Build Artifacts to release
     if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
     needs: [release_please, github_build]
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v3
@@ -124,7 +127,10 @@ jobs:
       - name: Add Artifacts to Release
         uses: softprops/action-gh-release@v1
         with:
-          files: posh-fzf-*/posh-fzf-*.{deb,tar.gz,zip}
+          files: |
+              posh-fzf-*/posh-fzf-*.deb
+              posh-fzf-*/posh-fzf-*.tar.gz
+              posh-fzf-*/posh-fzf-*.zip
           name: ${{ needs.release_please.outputs.tag_name }}
           tag_name: ${{ needs.release_please.outputs.tag_name }}
 
