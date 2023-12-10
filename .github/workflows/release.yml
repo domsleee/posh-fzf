@@ -106,6 +106,7 @@ jobs:
           ./target/${{ matrix.target }}/release/posh-fzf.exe
   upload_artifacts:
     name: Add Build Artifacts to release
+    if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
     needs: [release_please, github_build]
     runs-on: ubuntu-latest
     steps:
