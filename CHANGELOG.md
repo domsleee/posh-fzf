@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.8](https://github.com/domsleee/posh-fzf/compare/v0.2.7...v0.2.8) (2023-12-10)
+
+
+### Bug Fixes
+
+* defer release until assets are uploaded, add release-please config ([#31](https://github.com/domsleee/posh-fzf/issues/31)) ([99ffcf5](https://github.com/domsleee/posh-fzf/commit/99ffcf59ed6dcbe5cb3b9020876decec0e65fa89))
+* use github changelog-type ([#29](https://github.com/domsleee/posh-fzf/issues/29)) ([840d766](https://github.com/domsleee/posh-fzf/commit/840d76621251184956de727acdde7be478134cf8))
+
 ## [0.2.7](https://github.com/domsleee/posh-fzf/compare/v0.2.6...v0.2.7) (2023-12-10)
 
 
