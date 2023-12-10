@@ -9,6 +9,7 @@ env:
 jobs:
   release_please:
     name: Release Please
+    permissions: write-all
     runs-on: ubuntu-latest
     if: github.repository == 'domsleee/posh-fzf'
     outputs:
