@@ -53,13 +53,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get version
-        id: get_version
-        uses: SebRollen/toml-action@v1.0.2
-        with:
-          file: Cargo.toml
-          field: package.version
-
       - name: Setup Rust toolchain and cache
         uses: actions-rust-lang/setup-rust-toolchain@v1.4.3
         with:
@@ -97,11 +90,11 @@ jobs:
           README.md
           -C target/${{ matrix.target }}/release/ posh-fzf
           | gzip --best
-          > 'posh-fzf-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.tar.gz'
+          > 'posh-fzf-${{ needs.release_please.outputs.tag_name }}-${{ matrix.target }}.tar.gz'
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: >
-          7z a 'posh-fzf-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
+          7z a 'posh-fzf-${{ needs.release_please.outputs.tag_name }}-${{ matrix.target }}.zip'
           README.md
           ./target/${{ matrix.target }}/release/posh-fzf.exe
 
@@ -118,12 +111,13 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
         uses: softprops/action-gh-release@v1
         with:
+          draft: true
           files: |
             *.deb
             *.tar.gz
             *.zip
-          name: ${{ steps.get_version.outputs.value }}
-          tag_name: ${{ steps.get_version.outputs.value }}
+          name: ${{ needs.release_please.outputs.tag_name }}
+          tag_name: ${{ needs.release_please.outputs.tag_name }}
 
   publish:
     runs-on: ubuntu-latest
