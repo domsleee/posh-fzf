@@ -25,7 +25,6 @@ jobs:
   release_please:
     name: Release Please
     permissions: write-all
-    needs: [get_version]
     runs-on: ubuntu-latest
     if: github.repository == 'domsleee/posh-fzf'
     steps:
