@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/domsleee/posh-fzf/compare/v0.2.4...v0.2.5) (2023-12-10)
+
+
+### Bug Fixes
+
+* release workflow ([#23](https://github.com/domsleee/posh-fzf/issues/23)) ([f725c58](https://github.com/domsleee/posh-fzf/commit/f725c58e1c2a93dd3de02ce126acb7c90a884da3))
+
 ## [0.2.4](https://github.com/domsleee/posh-fzf/compare/v0.2.3...v0.2.4) (2023-12-10)
 
 
