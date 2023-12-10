@@ -110,9 +110,7 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            *.deb
-            *.tar.gz
-            *.zip
+            *.{deb,tar.gz,zip}
 
   upload_artifacts:
     name: Add Build Artifacts to release
@@ -126,11 +124,7 @@ jobs:
       - name: Add Artifacts to Release
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
-          files: |
-            *.deb
-            *.tar.gz
-            *.zip
+          files: posh-fzf-*/posh-fzf-*.{deb,tar.gz,zip}
           name: ${{ needs.release_please.outputs.tag_name }}
           tag_name: ${{ needs.release_please.outputs.tag_name }}
 
