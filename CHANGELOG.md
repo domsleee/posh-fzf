@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/domsleee/posh-fzf/compare/v0.2.5...v0.2.6) (2023-12-10)
+
+
+### Bug Fixes
+
+* simplify release workflow and fix artifact uploads ([#25](https://github.com/domsleee/posh-fzf/issues/25)) ([baa3b17](https://github.com/domsleee/posh-fzf/commit/baa3b17f420afe267c4950324fa9f511a37f8232))
+
 ## [0.2.5](https://github.com/domsleee/posh-fzf/compare/v0.2.4...v0.2.5) (2023-12-10)
 
 
