@@ -21,6 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: rust
+          changelog-type: github
   github_build:
     name: ${{ matrix.target }}
     needs: [release_please]
