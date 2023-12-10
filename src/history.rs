@@ -1,14 +1,17 @@
-use std::fs::File;
+use std::env::{self};
+use std::fs::{File, OpenOptions};
 use std::io::Write;
-use std::io::{self, BufRead, BufWriter};
+use std::io::{self, BufRead};
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Stdio};
+use std::time::{Duration, Instant};
 
 use crate::args::RootArgs;
 use crate::{get_height, wait_for_child};
 const HISTORY_NEWLINE: &str = "↵";
 
 pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
+    let child_start = Instant::now();
     let mut child = Command::new("fzf")
         .arg("--height")
         .arg(get_height(args))
@@ -19,10 +22,17 @@ pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
+    let child_duration = child_start.elapsed();
 
+    let stdin_start = Instant::now();
     let fzf_stdin = child.stdin.as_mut().expect("Failed to open stdin");
-    write_history_to_fzf_stdin(fzf_stdin, history_path)?;
+    let stdin_duration = stdin_start.elapsed();
 
+    let write_history_instant = Instant::now();
+    write_history_to_fzf_stdin(fzf_stdin, history_path)?;
+    let write_history_duration = write_history_instant.elapsed();
+
+    write_perf_logs(child_duration, stdin_duration, write_history_duration)?;
     wait_for_child(args, &mut child, |x| x.replace(HISTORY_NEWLINE, "\n"))
 }
 
@@ -38,9 +48,7 @@ fn write_history_to_fzf_stdin(
         all_data.push('\n');
     }
 
-    let mut writer = BufWriter::new(fzf_stdin);
-    writer.write_all(all_data.as_bytes())?;
-    writer.flush()?;
+    fzf_stdin.write_all(all_data.as_bytes())?;
 
     Ok(())
 }
@@ -74,6 +82,29 @@ pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<Str
 
     let set: indexmap::IndexSet<_> = all_lines.into_iter().rev().collect();
     Ok(set.into_iter().collect())
+}
+
+fn write_perf_logs(
+    child_duration: Duration,
+    stdin_duration: Duration,
+    write_history_duration: Duration,
+) -> io::Result<()> {
+    if env::var("POSH_FZF_PERF").is_err() {
+        return Ok(());
+    }
+    let home = dirs_next::home_dir().expect("has home directory");
+    let log_file_path = home.join("posh-fzf.log");
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(log_file_path)?;
+
+    writeln!(file, "New log")?;
+    writeln!(file, "{child_duration:?}: child_duration")?;
+    writeln!(file, "{stdin_duration:?}: stdin_duration")?;
+    writeln!(file, "{write_history_duration:?}: write_history_duration")?;
+    Ok(())
 }
 
 #[cfg(test)]
