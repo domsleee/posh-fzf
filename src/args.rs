@@ -4,6 +4,7 @@ use clap::{Parser, Subcommand};
 
 /// Fzf bindings for powershell
 #[derive(Parser, Debug)]
+#[command(version)]
 pub struct RootArgs {
     #[command(subcommand)]
     pub command: Commands,
