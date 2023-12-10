@@ -110,9 +110,7 @@ jobs:
         with:
           name: ${{ matrix.target }}
           path: |
-            *.deb
-            *.tar.gz
-            *.zip
+            *.{deb,tar.gz,zip}
 
   upload_artifacts:
     name: Add Build Artifacts to release
@@ -126,18 +124,10 @@ jobs:
       - name: Add Artifacts to Release
         uses: softprops/action-gh-release@v1
         with:
-          draft: true
-          files: |
-            *.deb
-            *.tar.gz
-            *.zip
+          files: posh-fzf-*/posh-fzf-*.{deb,tar.gz,zip}
           name: ${{ needs.release_please.outputs.tag_name }}
           tag_name: ${{ needs.release_please.outputs.tag_name }}
 
-      - name: Setup | Publish Release
-        run: gh release edit ${{ needs.release_please.outputs.tag_name }} --draft=false --repo=domsleee/posh-fzf
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
     runs-on: ubuntu-latest
     needs: [release_please, github_build, upload_artifacts]
