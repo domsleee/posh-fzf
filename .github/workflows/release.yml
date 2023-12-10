@@ -24,8 +24,7 @@ jobs:
   github_build:
     name: ${{ matrix.target }}
     needs: [release_please]
-    permissions:
-      contents: write
+    permissions: write-all
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
