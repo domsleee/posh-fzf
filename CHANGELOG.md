@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/domsleee/posh-fzf/compare/v0.2.6...v0.2.7) (2023-12-10)
+
+
+### Bug Fixes
+
+* wrong tag name causing multiple tags ([#27](https://github.com/domsleee/posh-fzf/issues/27)) ([ade540f](https://github.com/domsleee/posh-fzf/commit/ade540f8681683517fd397caf2337f14567d8b37))
+
 ## [0.2.6](https://github.com/domsleee/posh-fzf/compare/v0.2.5...v0.2.6) (2023-12-10)
 
 
