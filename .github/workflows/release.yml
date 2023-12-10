@@ -20,8 +20,6 @@ jobs:
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: rust
-          config-file: release-please-config.json
   github_build:
     name: ${{ matrix.target }}
     needs: [release_please]
