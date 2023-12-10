@@ -104,12 +104,7 @@ jobs:
           7z a 'posh-fzf-${{ steps.get_version.outputs.value }}-${{ matrix.target }}.zip'
           README.md
           ./target/${{ matrix.target }}/release/posh-fzf.exe
-  upload_artifacts:
-    name: Add Build Artifacts to release
-    if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
-    needs: [release_please, github_build]
-    runs-on: ubuntu-latest
-    steps:
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -119,16 +114,30 @@ jobs:
             *.tar.gz
             *.zip
 
-      - name: Create release
-        if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
+  upload_artifacts:
+    name: Add Build Artifacts to release
+    if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(main)') }}
+    needs: [release_please, github_build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Add Artifacts to Release
         uses: softprops/action-gh-release@v1
         with:
+          draft: true
           files: |
             *.deb
             *.tar.gz
             *.zip
-          name: ${{ steps.get_version.outputs.value }}
-          tag_name: ${{ steps.get_version.outputs.value }}
+          name: ${{ needs.release_please.outputs.tag_name }}
+          tag_name: ${{ needs.release_please.outputs.tag_name }}
+
+      - name: Setup | Publish Release
+        run: gh release edit ${{ needs.release_please.outputs.tag_name }} --draft=false --repo=domsleee/posh-fzf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   publish:
     runs-on: ubuntu-latest
     needs: [release_please, github_build, upload_artifacts]
