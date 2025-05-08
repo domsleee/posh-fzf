@@ -1,6 +1,6 @@
 use std::env::{self};
 use std::fs::{File, OpenOptions};
-use std::io::Write;
+use std::io::{BufWriter, Write};
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Stdio};
@@ -41,15 +41,9 @@ fn write_history_to_fzf_stdin(
     history_path: &PathBuf,
 ) -> io::Result<()> {
     let history_set = get_history_recent_commands(history_path)?;
-
-    let mut all_data = String::new();
-    for el in history_set {
-        all_data.push_str(&el);
-        all_data.push('\n');
-    }
-
-    fzf_stdin.write_all(all_data.as_bytes())?;
-
+    let all_data = history_set.join("\n") + "\n";
+    let mut buffered_stdin = BufWriter::with_capacity(256 * 1024, fzf_stdin); // Use a large buffer (256KB)
+    buffered_stdin.write_all(all_data.as_bytes())?;
     Ok(())
 }
 

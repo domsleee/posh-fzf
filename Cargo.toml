@@ -1,7 +1,7 @@
 [package]
 name = "posh-fzf"
-version = "0.2.8"
-edition = "2021"
+version = "0.3.0"
+edition = "2024"
 authors = ["Dom Slee <domslee1@gmail.com>"]
 description = "Fzf keybinding integration for powershell"
 repository = "https://github.com/domsleee/posh-fzf"
@@ -23,3 +23,4 @@ lto = true
 strip = true
 opt-level = 3
 codegen-units = 1
+panic = "abort"

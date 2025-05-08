@@ -104,12 +104,15 @@ $null = New-Module posh-fzf {
 			}
 		}
 	}
-
 	function ClearBufferAhead([int] $numRows) {
-		[Microsoft.PowerShell.PSConsoleReadLine]::Insert("`n" * ($numRows))
-		[Microsoft.PowerShell.PSConsoleReadLine]::Undo()
+		$tempPosX = [Console]::CursorLeft
+		[Console]::Write("`n" * $numRows)
+		[Console]::SetCursorPosition($tempPosX, [Console]::CursorTop - $numRows)
+		[Microsoft.PowerShell.PSConsoleReadLine]::Delete(0, 0)
+		# [Microsoft.PowerShell.PSConsoleReadLine]::Insert(" ")
+		# [Microsoft.PowerShell.PSConsoleReadLine]::Undo()
 	}
-
+	
 	function RedrawLastLineOfPrompt {
 		$previousOutputEncoding = [Console]::OutputEncoding
 		[Console]::OutputEncoding = [Text.Encoding]::UTF8
