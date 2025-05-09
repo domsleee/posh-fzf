@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 (2025-05-09)
+
+## What's Changed
+* feat!: updates and small performance improvements in https://github.com/domsleee/posh-fzf/pull/40
+
+**Full Changelog**: https://github.com/domsleee/posh-fzf/compare/v0.2.8...v0.3.0
+
 ## 0.2.8 (2023-12-10)
 
 ## What's Changed
