@@ -1,4 +1,12 @@
-use std::{cell::RefCell, collections::HashMap, env, fs::OpenOptions, io::{self, Write}, sync::Once, time::Instant};
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    env,
+    fs::OpenOptions,
+    io::{self, Write},
+    sync::Once,
+    time::Instant,
+};
 
 thread_local! {
     pub static TIMINGS: RefCell<Timings> = RefCell::new(Timings::default());
@@ -53,15 +61,17 @@ pub fn write_perf_logs() -> io::Result<()> {
         .open(log_file_path)?;
 
     writeln!(file, "New log")?;
-    TIMINGS.try_with(|t| {
-        let timings = t.borrow();
-        let binding = timings.get_all_durations();
-        let mut durations = binding.iter().collect::<Vec<_>>();
-        durations.sort_by(|a, b| b.1.cmp(a.1));
-        for (name, duration) in durations {
-            writeln!(file, "{duration:?}: {name}").expect("file write");
-        }
-    }).expect("timings");
+    TIMINGS
+        .try_with(|t| {
+            let timings = t.borrow();
+            let binding = timings.get_all_durations();
+            let mut durations = binding.iter().collect::<Vec<_>>();
+            durations.sort_by(|a, b| b.1.cmp(a.1));
+            for (name, duration) in durations {
+                writeln!(file, "{duration:?}: {name}").expect("file write");
+            }
+        })
+        .expect("timings");
 
     Ok(())
 }
@@ -74,13 +84,16 @@ pub fn is_timings_enabled() -> bool {
             IS_ENABLED = env::var("POSH_FZF_PERF").is_ok();
         });
         IS_ENABLED
-    }}
+    }
+}
 
 #[macro_export]
 macro_rules! timing_start {
     ($name:expr) => {
         if is_timings_enabled() {
-            TIMINGS.try_with(|t| t.borrow_mut().start($name)).expect("timings")
+            TIMINGS
+                .try_with(|t| t.borrow_mut().start($name))
+                .expect("timings")
         }
     };
 }
@@ -89,7 +102,9 @@ macro_rules! timing_start {
 macro_rules! timing_end {
     ($name:expr) => {
         if is_timings_enabled() {
-            TIMINGS.try_with(|t| t.borrow_mut().end($name)).expect("timings")
+            TIMINGS
+                .try_with(|t| t.borrow_mut().end($name))
+                .expect("timings")
         }
     };
 }

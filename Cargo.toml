@@ -11,6 +11,7 @@ keywords = ["powershell", "pwsh", "fzf", "fuzzy", "keybindings"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+ahash = "0.8.12"
 clap = { version = "4.4.11", features = ["derive"] }
 dirs-next = "2.0.0"
 indexmap = "2.1.0"
@@ -27,6 +28,6 @@ codegen-units = 1
 panic = "abort"
 
 [[bench]]
-name = "get_history_recent_commands"
+name = "history_bench"
 harness = false
 

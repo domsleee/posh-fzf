@@ -1,11 +1,12 @@
 use std::fs::File;
-use std::io::{self, BufRead};
 use std::io::Write;
+use std::io::{self, Read};
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Stdio};
-use crate::timings::is_timings_enabled;
+
 use crate::args::RootArgs;
-use crate::timings::{write_perf_logs, TIMINGS};
+use crate::timings::is_timings_enabled;
+use crate::timings::{TIMINGS, write_perf_logs};
 use crate::util::{get_height, wait_for_child};
 use crate::{timing_end, timing_start};
 const HISTORY_NEWLINE_CHAR: char = '↵';
@@ -52,19 +53,24 @@ pub fn print_history_line(history_line: &str) {
 
 /// Get historical commands in most recent order
 pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<String>> {
-    timing_start!("process_history_file");
-    let file = File::open(history_path)?;
-    let reader = io::BufReader::new(file);
-    let mut all_lines: Vec<String> = Vec::new();
-    let mut current_line = String::new();
+    let all_lines = get_history_all_commands(history_path)?;
+    Ok(get_unique_reversed(all_lines))
+}
 
-    for line in reader.lines() {
-        let line = line?;
+pub fn get_history_all_commands(history_path: &PathBuf) -> io::Result<Vec<String>> {
+    timing_start!("get_history_all_commands");
+    let file = File::open(history_path)?;
+    let mut reader = io::BufReader::new(file);
+    let mut all_lines = Vec::new();
+    let mut buffer = String::new();
+    reader.read_to_string(&mut buffer)?;
+    let mut current_line = String::new();
+    for line in buffer.lines() {
         if line.ends_with('`') {
             current_line.push_str(line.trim_end_matches('`'));
             current_line.push(HISTORY_NEWLINE_CHAR);
         } else {
-            current_line.push_str(&line);
+            current_line.push_str(line);
             all_lines.push(current_line);
             current_line = String::new();
         }
@@ -73,13 +79,17 @@ pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<Str
     if !current_line.is_empty() {
         all_lines.push(current_line);
     }
-    timing_end!("process_history_file");
+    timing_end!("get_history_all_commands");
+    Ok(all_lines)
+}
 
-    timing_start!("index_set");
-    let set: indexmap::IndexSet<_> = all_lines.into_iter().rev().collect();
+pub fn get_unique_reversed(all_lines: Vec<String>) -> Vec<String> {
+    timing_start!("get_unique_reversed");
+    let mut set = indexmap::IndexSet::with_hasher(ahash::RandomState::new());
+    set.extend(all_lines.into_iter().rev());
     let res = set.into_iter().collect::<Vec<_>>();
-    timing_end!("index_set");
-    Ok(res)
+    timing_end!("get_unique_reversed");
+    res
 }
 
 #[cfg(test)]
