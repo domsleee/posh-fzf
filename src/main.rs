@@ -1,9 +1,9 @@
-use args::{Commands, RootArgs};
 use clap::Parser;
-use std::io::{self, Read};
-use std::process::{Child, Command, Stdio};
-mod args;
-mod history;
+use posh_fzf::args::{Commands, RootArgs};
+use posh_fzf::history;
+use posh_fzf::util::{get_height, wait_for_child};
+use std::io::{self};
+use std::process::{Command, Stdio};
 
 fn main() -> io::Result<()> {
     let args = match RootArgs::try_parse() {
@@ -44,26 +44,4 @@ fn custom(args: &RootArgs, trail_args: &[String]) -> io::Result<()> {
         .stdout(Stdio::inherit())
         .spawn()?;
     wait_for_child(args, &mut child, |x| x.to_string())
-}
-
-pub fn wait_for_child<F>(_args: &RootArgs, child: &mut Child, formatter: F) -> io::Result<()>
-where
-    F: Fn(&str) -> String,
-{
-    let mut output: String = String::new();
-    child.stdout.take().unwrap().read_to_string(&mut output)?;
-
-    let status = child.wait()?;
-
-    if status.success() {
-        let output = formatter(output.trim());
-        print!("{output}");
-    } else {
-        std::process::exit(1);
-    }
-    Ok(())
-}
-
-pub fn get_height(args: &RootArgs) -> String {
-    args.height.clone().unwrap_or("45%".to_string())
 }

@@ -1,17 +1,17 @@
-use std::env::{self};
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{self, BufRead};
-use std::io::{BufWriter, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Stdio};
-use std::time::{Duration, Instant};
-
+use crate::timings::is_timings_enabled;
 use crate::args::RootArgs;
-use crate::{get_height, wait_for_child};
-const HISTORY_NEWLINE: &str = "↵";
+use crate::timings::{write_perf_logs, TIMINGS};
+use crate::util::{get_height, wait_for_child};
+use crate::{timing_end, timing_start};
+const HISTORY_NEWLINE_CHAR: char = '↵';
 
 pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
-    let child_start = Instant::now();
+    timing_start!("child_fork");
     let mut child = Command::new("fzf")
         .arg("--height")
         .arg(get_height(args))
@@ -22,18 +22,18 @@ pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()?;
-    let child_duration = child_start.elapsed();
+    timing_end!("child_fork");
 
-    let stdin_start = Instant::now();
+    timing_start!("get_stdin");
     let fzf_stdin = child.stdin.as_mut().expect("Failed to open stdin");
-    let stdin_duration = stdin_start.elapsed();
+    timing_end!("get_stdin");
 
-    let write_history_instant = Instant::now();
+    timing_start!("write_history_to_fzf_stdin");
     write_history_to_fzf_stdin(fzf_stdin, history_path)?;
-    let write_history_duration = write_history_instant.elapsed();
+    timing_end!("write_history_to_fzf_stdin");
 
-    write_perf_logs(child_duration, stdin_duration, write_history_duration)?;
-    wait_for_child(args, &mut child, |x| x.replace(HISTORY_NEWLINE, "\n"))
+    write_perf_logs()?;
+    wait_for_child(args, &mut child, |x| x.replace(HISTORY_NEWLINE_CHAR, "\n"))
 }
 
 fn write_history_to_fzf_stdin(
@@ -42,17 +42,17 @@ fn write_history_to_fzf_stdin(
 ) -> io::Result<()> {
     let history_set = get_history_recent_commands(history_path)?;
     let all_data = history_set.join("\n") + "\n";
-    let mut buffered_stdin = BufWriter::with_capacity(256 * 1024, fzf_stdin); // Use a large buffer (256KB)
-    buffered_stdin.write_all(all_data.as_bytes())?;
+    fzf_stdin.write_all(all_data.as_bytes())?;
     Ok(())
 }
 
 pub fn print_history_line(history_line: &str) {
-    println!("{}", history_line.replace(HISTORY_NEWLINE, "\n"))
+    println!("{}", history_line.replace(HISTORY_NEWLINE_CHAR, "\n"))
 }
 
 /// Get historical commands in most recent order
 pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<String>> {
+    timing_start!("process_history_file");
     let file = File::open(history_path)?;
     let reader = io::BufReader::new(file);
     let mut all_lines: Vec<String> = Vec::new();
@@ -62,7 +62,7 @@ pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<Str
         let line = line?;
         if line.ends_with('`') {
             current_line.push_str(line.trim_end_matches('`'));
-            current_line.push_str(HISTORY_NEWLINE);
+            current_line.push(HISTORY_NEWLINE_CHAR);
         } else {
             current_line.push_str(&line);
             all_lines.push(current_line);
@@ -73,32 +73,13 @@ pub fn get_history_recent_commands(history_path: &PathBuf) -> io::Result<Vec<Str
     if !current_line.is_empty() {
         all_lines.push(current_line);
     }
+    timing_end!("process_history_file");
 
+    timing_start!("index_set");
     let set: indexmap::IndexSet<_> = all_lines.into_iter().rev().collect();
-    Ok(set.into_iter().collect())
-}
-
-fn write_perf_logs(
-    child_duration: Duration,
-    stdin_duration: Duration,
-    write_history_duration: Duration,
-) -> io::Result<()> {
-    if env::var("POSH_FZF_PERF").is_err() {
-        return Ok(());
-    }
-    let home = dirs_next::home_dir().expect("has home directory");
-    let log_file_path = home.join("posh-fzf.log");
-
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(log_file_path)?;
-
-    writeln!(file, "New log")?;
-    writeln!(file, "{child_duration:?}: child_duration")?;
-    writeln!(file, "{stdin_duration:?}: stdin_duration")?;
-    writeln!(file, "{write_history_duration:?}: write_history_duration")?;
-    Ok(())
+    let res = set.into_iter().collect::<Vec<_>>();
+    timing_end!("index_set");
+    Ok(res)
 }
 
 #[cfg(test)]
@@ -131,7 +112,7 @@ line
             vec![
                 "1st",
                 "2nd",
-                &format!("multi{HISTORY_NEWLINE}line"),
+                &format!("multi{HISTORY_NEWLINE_CHAR}line"),
                 "3rd",
                 "4th"
             ]
