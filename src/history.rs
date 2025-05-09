@@ -1,6 +1,6 @@
 use std::fs::File;
-use std::io::Write;
 use std::io::{self, Read};
+use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 use std::process::{ChildStdin, Command, Stdio};
 
@@ -29,10 +29,7 @@ pub fn history(args: &RootArgs, history_path: &PathBuf) -> io::Result<()> {
     let fzf_stdin = child.stdin.as_mut().expect("Failed to open stdin");
     timing_end!("get_stdin");
 
-    timing_start!("write_history_to_fzf_stdin");
     write_history_to_fzf_stdin(fzf_stdin, history_path)?;
-    timing_end!("write_history_to_fzf_stdin");
-
     write_perf_logs()?;
     wait_for_child(args, &mut child, |x| x.replace(HISTORY_NEWLINE_CHAR, "\n"))
 }
@@ -42,8 +39,13 @@ fn write_history_to_fzf_stdin(
     history_path: &PathBuf,
 ) -> io::Result<()> {
     let history_set = get_history_recent_commands(history_path)?;
+    timing_start!("history_set_join");
     let all_data = history_set.join("\n") + "\n";
-    fzf_stdin.write_all(all_data.as_bytes())?;
+    timing_end!("history_set_join");
+    timing_start!("fzf_stdin_write");
+    let mut buffered = BufWriter::new(fzf_stdin);
+    buffered.write_all(all_data.as_bytes())?;
+    timing_end!("fzf_stdin_write");
     Ok(())
 }
 
