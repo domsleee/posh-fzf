@@ -12,13 +12,13 @@ keywords = ["powershell", "pwsh", "fzf", "fuzzy", "keybindings"]
 
 [dependencies]
 ahash = "0.8.12"
-clap = { version = "4.4.11", features = ["derive"] }
+clap = { version = "4.5.37", features = ["derive"] }
 dirs-next = "2.0.0"
-indexmap = "2.1.0"
+indexmap = "2.9.0"
 
 [dev-dependencies]
-tempfile = "3.3"
-criterion = "0.3"
+tempfile = "3.19"
+criterion = "0.5"
 
 [profile.release]
 lto = true
@@ -30,4 +30,3 @@ panic = "abort"
 [[bench]]
 name = "history_bench"
 harness = false
-

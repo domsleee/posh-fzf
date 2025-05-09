@@ -61,9 +61,9 @@ pub fn get_history_all_commands(history_path: &PathBuf) -> io::Result<Vec<String
     timing_start!("get_history_all_commands");
     let file = File::open(history_path)?;
     let mut reader = io::BufReader::new(file);
-    let mut all_lines = Vec::new();
     let mut buffer = String::new();
     reader.read_to_string(&mut buffer)?;
+    let mut all_lines = Vec::new();
     let mut current_line = String::new();
     for line in buffer.lines() {
         if line.ends_with('`') {
