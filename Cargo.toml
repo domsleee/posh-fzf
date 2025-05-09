@@ -1,7 +1,7 @@
 [package]
 name = "posh-fzf"
-version = "0.2.8"
-edition = "2021"
+version = "0.3.0"
+edition = "2024"
 authors = ["Dom Slee <domslee1@gmail.com>"]
 description = "Fzf keybinding integration for powershell"
 repository = "https://github.com/domsleee/posh-fzf"
@@ -11,15 +11,22 @@ keywords = ["powershell", "pwsh", "fzf", "fuzzy", "keybindings"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.4.11", features = ["derive"] }
+ahash = "0.8.12"
+clap = { version = "4.5.37", features = ["derive"] }
 dirs-next = "2.0.0"
-indexmap = "2.1.0"
+indexmap = "2.9.0"
 
 [dev-dependencies]
-tempfile = "3.3"
+tempfile = "3.19"
+criterion = "0.5"
 
 [profile.release]
 lto = true
 strip = true
 opt-level = 3
 codegen-units = 1
+panic = "abort"
+
+[[bench]]
+name = "history_bench"
+harness = false
