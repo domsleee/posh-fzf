@@ -1,6 +1,6 @@
 [package]
 name = "posh-fzf"
-version = "0.2.8"
+version = "0.3.0"
 edition = "2024"
 authors = ["Dom Slee <domslee1@gmail.com>"]
 description = "Fzf keybinding integration for powershell"
